@@ -13,7 +13,7 @@ logDestinations: [stdout]
 # If "file" is in logDestinations, this is the file which will receive the logs.
 logFile: mediamtx.log
 # If "syslog" is in logDestinations, use prefix for logs.
-sysLogPrefix: mediamtx
+#sysLogPrefix: mediamtx
 
 # Timeout of read operations.
 readTimeout: 10s
@@ -71,6 +71,12 @@ authInternalUsers:
   - action: playback
     path:
 
+- user: admin
+  pass: geheim
+  ips: []
+  permissions:
+  - action: api
+  
   # Default administrator.
   # This allows to use API, metrics and PPROF without authentication,
   # if the IP is localhost.
@@ -130,7 +136,7 @@ authJWTClaimKey: mediamtx_permissions
 # Global settings -> Control API
 
 # Enable controlling the server through the Control API.
-api: no
+api: yes
 # Address of the Control API listener.
 apiAddress: :9997
 # Enable TLS/HTTPS on the Control API server.
@@ -139,9 +145,9 @@ apiEncryption: no
 # This can be generated with:
 # openssl genrsa -out server.key 2048
 # openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
-apiServerKey: server.key
+#apiServerKey: server.key
 # Path to the server certificate.
-apiServerCert: server.crt
+#apiServerCert: server.crt
 # Value of the Access-Control-Allow-Origin header provided in every HTTP response.
 apiAllowOrigin: '*'
 # List of IPs or CIDRs of proxies placed before the HTTP server.
@@ -153,7 +159,7 @@ apiTrustedProxies: []
 # Global settings -> Metrics
 
 # Enable Prometheus-compatible metrics.
-metrics: no
+metrics: yes
 # Address of the metrics HTTP listener.
 metricsAddress: :9998
 # Enable TLS/HTTPS on the Metrics server.
@@ -162,9 +168,9 @@ metricsEncryption: no
 # This can be generated with:
 # openssl genrsa -out server.key 2048
 # openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
-metricsServerKey: server.key
+#metricsServerKey: server.key
 # Path to the server certificate.
-metricsServerCert: server.crt
+#metricsServerCert: server.crt
 # Value of the Access-Control-Allow-Origin header provided in every HTTP response.
 metricsAllowOrigin: '*'
 # List of IPs or CIDRs of proxies placed before the HTTP server.
@@ -176,7 +182,7 @@ metricsTrustedProxies: []
 # Global settings -> PPROF
 
 # Enable pprof-compatible endpoint to monitor performances.
-pprof: no
+pprof: yes
 # Address of the pprof listener.
 pprofAddress: :9999
 # Enable TLS/HTTPS on the pprof server.
@@ -185,9 +191,9 @@ pprofEncryption: no
 # This can be generated with:
 # openssl genrsa -out server.key 2048
 # openssl req -new -x509 -sha256 -key server.key -out server.crt -days 3650
-pprofServerKey: server.key
+#pprofServerKey: server.key
 # Path to the server certificate.
-pprofServerCert: server.crt
+#pprofServerCert: server.crt
 # Value of the Access-Control-Allow-Origin header provided in every HTTP response.
 pprofAllowOrigin: '*'
 # List of IPs or CIDRs of proxies placed before the HTTP server.
@@ -304,22 +310,22 @@ hlsAllowOrigin: '*'
 hlsTrustedProxies: []
 # By default, HLS is generated only when requested by a user.
 # This option allows to generate it always, avoiding the delay between request and generation.
-hlsAlwaysRemux: no
+hlsAlwaysRemux: yes
 # Variant of the HLS protocol to use. Available options are:
 # * mpegts - uses MPEG-TS segments, for maximum compatibility.
 # * fmp4 - uses fragmented MP4 segments, more efficient.
 # * lowLatency - uses Low-Latency HLS.
-hlsVariant: lowLatency
+hlsVariant: mpegts
 # Number of HLS segments to keep on the server.
 # Segments allow to seek through the stream.
 # Their number doesn't influence latency.
-hlsSegmentCount: 7
+hlsSegmentCount: 10
 # Minimum duration of each segment.
 # A player usually puts 3 segments in a buffer before reproducing the stream.
 # The final segment duration is also influenced by the interval between IDR frames,
 # since the server changes the duration in order to include at least one IDR frame
 # in each segment.
-hlsSegmentDuration: 1s
+hlsSegmentDuration: 5s
 # Minimum duration of each part.
 # A player usually puts 3 parts in a buffer before reproducing the stream.
 # Parts are used in Low-Latency HLS in place of segments.
@@ -332,7 +338,7 @@ hlsSegmentMaxSize: 50M
 # Directory in which to save segments, instead of keeping them in the RAM.
 # This decreases performance, since reading from disk is less performant than
 # reading from RAM, but allows to save RAM.
-hlsDirectory: ''
+hlsDirectory: './recordings/%path/hls/'
 # The muxer will be closed when there are no
 # reader requests and this amount of time has passed.
 hlsMuxerCloseAfter: 60s
@@ -451,9 +457,9 @@ pathDefaults:
   # If the stream is not available, redirect readers to this path.
   # It can be can be a relative path (i.e. /otherstream) or an absolute RTSP URL.
   fallback:
-  # Use original absolute timestamps of RTSP and WebRTC frames.
-  # In RTSP and WebRTC, absolute timestamps are transported through RTCP reports.
-  useAbsoluteTimestamp: false
+  # Route absolute timestamps of RTSP packets published or proxied through this path.
+  # Absolute timestamps are transported through RTCP reports.
+  #rtspAbsoluteTimestamp: false
 
   ###############################################
   # Default path settings -> Record
@@ -517,66 +523,64 @@ pathDefaults:
   ###############################################
   # Default path settings -> Raspberry Pi Camera source (when source is "rpiCamera")
 
-  # ID of the camera.
+  # ID of the camera
   rpiCameraCamID: 0
-  # Whether this is a secondary stream.
-  rpiCameraSecondary: false
-  # Width of frames.
+  # Width of frames
   rpiCameraWidth: 1920
-  # Height of frames.
+  # Height of frames
   rpiCameraHeight: 1080
-  # Flip horizontally.
+  # Flip horizontally
   rpiCameraHFlip: false
-  # Flip vertically.
+  # Flip vertically
   rpiCameraVFlip: false
-  # Brightness [-1, 1].
+  # Brightness [-1, 1]
   rpiCameraBrightness: 0
-  # Contrast [0, 16].
+  # Contrast [0, 16]
   rpiCameraContrast: 1
-  # Saturation [0, 16].
+  # Saturation [0, 16]
   rpiCameraSaturation: 1
-  # Sharpness [0, 16].
+  # Sharpness [0, 16]
   rpiCameraSharpness: 1
   # Exposure mode.
-  # values: normal, short, long, custom.
+  # values: normal, short, long, custom
   rpiCameraExposure: normal
   # Auto-white-balance mode.
-  # values: auto, incandescent, tungsten, fluorescent, indoor, daylight, cloudy, custom.
+  # values: auto, incandescent, tungsten, fluorescent, indoor, daylight, cloudy, custom
   rpiCameraAWB: auto
   # Auto-white-balance fixed gains. This can be used in place of rpiCameraAWB.
-  # format: [red,blue].
+  # format: [red,blue]
   rpiCameraAWBGains: [0, 0]
   # Denoise operating mode.
-  # values: off, cdn_off, cdn_fast, cdn_hq.
+  # values: off, cdn_off, cdn_fast, cdn_hq
   rpiCameraDenoise: "off"
   # Fixed shutter speed, in microseconds.
   rpiCameraShutter: 0
   # Metering mode of the AEC/AGC algorithm.
-  # values: centre, spot, matrix, custom.
+  # values: centre, spot, matrix, custom
   rpiCameraMetering: centre
-  # Fixed gain.
+  # Fixed gain
   rpiCameraGain: 0
-  # EV compensation of the image [-10, 10].
+  # EV compensation of the image [-10, 10]
   rpiCameraEV: 0
-  # Region of interest, in format x,y,width,height (all normalized between 0 and 1).
+  # Region of interest, in format x,y,width,height (all normalized between 0 and 1)
   rpiCameraROI:
   # Whether to enable HDR on Raspberry Camera 3.
   rpiCameraHDR: false
-  # Tuning file.
+  # Tuning file
   rpiCameraTuningFile:
   # Sensor mode, in format [width]:[height]:[bit-depth]:[packing]
   # bit-depth and packing are optional.
   rpiCameraMode:
-  # frames per second.
+  # frames per second
   rpiCameraFPS: 30
-  # Autofocus mode.
-  # values: auto, manual, continuous.
+  # Autofocus mode
+  # values: auto, manual, continuous
   rpiCameraAfMode: continuous
-  # Autofocus range.
-  # values: normal, macro, full.
+  # Autofocus range
+  # values: normal, macro, full
   rpiCameraAfRange: normal
-  # Autofocus speed.
-  # values: normal, fast.
+  # Autofocus speed
+  # values: normal, fast
   rpiCameraAfSpeed: normal
   # Lens position (for manual autofocus only), will be set to focus to a specific distance
   # calculated by the following formula: d = 1 / value
@@ -594,18 +598,16 @@ pathDefaults:
   # Text that is printed on each frame.
   # format is the one of the strftime() function.
   rpiCameraTextOverlay: '%Y-%m-%d %H:%M:%S - MediaMTX'
-  # Codec. Available values: auto, hardwareH264, softwareH264, mjpeg.
+  # Codec. Available values: auto, hardwareH264, softwareH264
   rpiCameraCodec: auto
-  # Period between H264 IDR frames.
+  # Period between IDR frames
   rpiCameraIDRPeriod: 60
-  # H264 Bitrate.
+  # Bitrate
   rpiCameraBitrate: 5000000
-  # H264 profile.
+  # H264 profile
   rpiCameraProfile: main
-  # H264 level.
+  # H264 level
   rpiCameraLevel: '4.1'
-  # JPEG quality.
-  rpiCameraJPEGQuality: 60
 
   ###############################################
   # Default path settings -> Hooks
@@ -709,6 +711,13 @@ pathDefaults:
 # for example "~^(test1|test2)$" will match both "test1" and "test2",
 # for example "~^prefix" will match all paths that start with "prefix".
 paths:
+  postman-test2:
+    source: publisher
+    record: true
+    recordPartDuration: 5s
+    recordSegmentDuration: 5s
+    overridePublisher: false
+    runOnRecordSegmentCreate: curl http://localhost:7777/webhook?segment_path=$MTX_SEGMENT_PATH
   # example:
   # my_camera:
   #   source: rtsp://my_camera
@@ -716,3 +725,4 @@ paths:
   # Settings under path "all_others" are applied to all paths that
   # do not match another entry.
   all_others:
+
