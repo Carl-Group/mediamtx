@@ -1,10 +1,8 @@
 package hls
 
 import (
-	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 	"time"
 
 	"github.com/bluenviron/gohlslib/v2"
@@ -64,50 +62,14 @@ func (mi *muxerInstance) initialize() error {
 	mi.Log(logger.Info, "is converting into HLS, %s",
 		defs.FormatsInfo(mi.stream.ReaderFormats(mi)))
 
-	mi.stream.StartReader(mi)
+	mi.Log(logger.Info, "👀 muxer_instance.go: Untertitel-Erweiterung aktiv!")
 
-	// Inject subtitle reference after short delay (to ensure muxer has started)
-	go func() {
-		time.Sleep(2 * time.Second)
-		mi.injectSubtitleReference(muxerDirectory)
-	}()
+	mi.stream.StartReader(mi)
 
 	return nil
 }
 
-// injectSubtitleReference appends EXT-X-MEDIA and updated EXT-X-STREAM-INF for subtitles
-func (mi *muxerInstance) injectSubtitleReference(dir string) {
-	mainPlaylist := filepath.Join(dir, "main_stream.m3u8")
-	info, err := os.Stat(mainPlaylist)
-	if err != nil || info.IsDir() {
-		return
-	}
-
-	b, err := ioutil.ReadFile(mainPlaylist)
-	if err != nil {
-		mi.Log(logger.Warn, "unable to read playlist: %v", err)
-		return
-	}
-
-	content := string(b)
-
-	// Check if EXT-X-MEDIA is already present
-	if strings.Contains(content, "EXT-X-MEDIA:TYPE=SUBTITLES") {
-		return
-	}
-
-	subsLine := `#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID="subs",NAME="Deutsch",LANGUAGE="de",AUTOSELECT=YES,DEFAULT=YES,URI="subtitles.m3u8"`
-	infLine := `#EXT-X-STREAM-INF:PROGRAM-ID=1,BANDWIDTH=800000,SUBTITLES="subs"`
-	
-	// prepend subtitle metadata
-	newContent := "#EXTM3U\n#EXT-X-VERSION:3\n" + subsLine + "\n" + infLine + "\n" + filepath.Base(mainPlaylist) + "\n"
-	
-	err = ioutil.WriteFile(mainPlaylist, []byte(newContent), 0644)
-	if err != nil {
-		mi.Log(logger.Warn, "unable to write updated playlist: %v", err)
-	}
-}
-
+// Log implements logger.Writer.
 func (mi *muxerInstance) Log(level logger.Level, format string, args ...interface{}) {
 	mi.parent.Log(level, format, args...)
 }
