@@ -98,3 +98,6 @@ require (
 replace github.com/pion/ice/v4 => github.com/aler9/ice/v4 v4.0.0-20250301104324-b2df7db9f75d
 
 replace github.com/pion/webrtc/v4 => github.com/aler9/webrtc/v4 v4.0.0-20250228091429-18796cd12b4f
+
+replace github.com/bluenviron/mediamtx => github.com/Carl-Group/mediamtx
+
