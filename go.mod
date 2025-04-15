@@ -1,4 +1,4 @@
-module github.com/bluenviron/mediamtx
+module github.com/Carl-Group/mediamtx
 
 go 1.23
 
