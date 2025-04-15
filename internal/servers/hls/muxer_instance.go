@@ -1,8 +1,12 @@
 package hls
 
 import (
+	"bytes"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/bluenviron/gohlslib/v2"
@@ -92,5 +96,31 @@ func (mi *muxerInstance) handleRequest(ctx *gin.Context) {
 		bytesSent:      mi.bytesSent,
 	}
 
-	mi.hmuxer.Handle(w, ctx.Request)
+	// Intercept playlist and inject subtitles if needed
+	if strings.HasSuffix(ctx.Request.URL.Path, "/index.m3u8") {
+		rw := &interceptWriter{ResponseWriter: w.ResponseWriter, buf: &bytes.Buffer{}}
+		mi.hmuxer.Handle(rw, ctx.Request)
+		content := rw.buf.String()
+
+		// Only inject once, if not already injected
+		if !strings.Contains(content, "#EXT-X-MEDIA:TYPE=SUBTITLES") {
+			injection := "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"Deutsch\",DEFAULT=YES,AUTOSELECT=YES,FORCED=NO,LANGUAGE=\"de\",URI=\"subtitles.m3u8\"\n"
+			content = strings.Replace(content, "#EXT-X-INDEPENDENT-SEGMENTS\n", "#EXT-X-INDEPENDENT-SEGMENTS\n"+injection, 1)
+			mi.Log(logger.Info, "📺 Subtitle injection into index.m3u8 complete")
+		}
+
+		rw.Header().Set("Content-Type", "application/vnd.apple.mpegurl")
+		_, _ = io.Copy(w, strings.NewReader(content))
+	} else {
+		mi.hmuxer.Handle(w, ctx.Request)
+	}
+}
+
+type interceptWriter struct {
+	http.ResponseWriter
+	buf *bytes.Buffer
+}
+
+func (w *interceptWriter) Write(p []byte) (int, error) {
+	return w.buf.Write(p)
 }
