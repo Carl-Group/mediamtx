@@ -1,7 +1,6 @@
 package hls
 
 import (
-	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
