@@ -59,6 +59,19 @@ func (mi *muxerInstance) initialize() error {
 		return err
 	}
 
+	// Inject subtitle playlist reference after small delay to ensure index.m3u8 exists
+	go func() {
+		time.Sleep(2 * time.Second)
+
+		indexPath := filepath.Join(muxerDirectory, "index.m3u8")
+		f, err := os.OpenFile(indexPath, os.O_APPEND|os.O_WRONLY, 0644)
+		if err == nil {
+			defer f.Close()
+			subtitleLine := "#EXT-X-MEDIA:TYPE=SUBTITLES,GROUP-ID=\"subs\",NAME=\"Deutsch\",LANGUAGE=\"de\",AUTOSELECT=YES,DEFAULT=YES,URI=\"subtitles.vtt\"\n"
+			f.WriteString(subtitleLine)
+		}
+	}()
+
 	mi.Log(logger.Info, "is converting into HLS, %s",
 		defs.FormatsInfo(mi.stream.ReaderFormats(mi)))
 
