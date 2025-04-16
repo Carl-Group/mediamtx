@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/bluenviron/gohlslib/v2"
+	"github.com/Carl-Group/gohlslib/v2"
 	"github.com/bluenviron/mediamtx/internal/conf"
 	"github.com/bluenviron/mediamtx/internal/defs"
 	"github.com/bluenviron/mediamtx/internal/logger"
