@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/bluenviron/gohlslib/v2"
-	"github.com/bluenviron/gohlslib/v2/pkg/codecs"
+	"github.com/Carl-Group/gohlslib/v2"
+	"github.com/Carl-Group/gohlslib/v2/pkg/codecs"
 	"github.com/bluenviron/gortsplib/v4/pkg/description"
 	"github.com/bluenviron/mediamtx/internal/conf"
 	"github.com/bluenviron/mediamtx/internal/defs"
