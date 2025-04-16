@@ -101,3 +101,5 @@ replace github.com/pion/webrtc/v4 => github.com/aler9/webrtc/v4 v4.0.0-202502280
 
 replace github.com/bluenviron/mediamtx => ./
 
+replace github.com/bluenviron/gohlslib/v2 => /opt/carl-gohlslib/gohlslib
+
